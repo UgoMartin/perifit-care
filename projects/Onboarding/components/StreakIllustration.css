@@ -1,0 +1,24 @@
+.streak-illustration {
+  position: relative;
+  width: 276.254px;
+  height: 263.03px;
+  flex-shrink: 0;
+}
+
+.streak-illustration__bar-wrapper {
+  position: absolute;
+  top: 180.77px;
+  left: 0;
+}
+
+.streak-illustration__bar {
+  display: block;
+  width: 276.254px;
+  line-height: 0;
+}
+
+.streak-illustration__bar svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}

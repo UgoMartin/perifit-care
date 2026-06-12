@@ -1,0 +1,19 @@
+.animated-flame {
+  position: absolute;
+  top: 0;
+  left: 44.584px;
+  width: 187.086px;
+  height: 221.899px;
+}
+
+.animated-flame__flicker {
+  width: 100%;
+  height: 100%;
+}
+
+.animated-flame__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}

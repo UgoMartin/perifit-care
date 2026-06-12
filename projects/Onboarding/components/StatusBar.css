@@ -1,0 +1,17 @@
+.status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 390px;
+  height: 44px;
+  overflow: hidden;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.status-bar__image {
+  display: block;
+  width: 390px;
+  height: 44px;
+  object-fit: cover;
+}
