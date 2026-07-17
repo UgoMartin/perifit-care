@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@perifit/app-design-system": ["packages/library/src"]
+    }
+  }
+}

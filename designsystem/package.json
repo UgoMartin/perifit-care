@@ -1,0 +1,17 @@
+{
+  "name": "perifit-design-system-workspace",
+  "version": "0.3.34",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "example": "yarn workspace com.perifit.example",
+    "library": "yarn workspace @perifit/app-design-system",
+    "prepare": "husky"
+  },
+  "packageManager": "yarn@4.12.0",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

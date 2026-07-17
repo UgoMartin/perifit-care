@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "name": "Perifit Figma to React Native design system mapping",
+  "updatedAt": "2026-07-17",
+  "package": {
+    "name": "@perifit/app-design-system",
+    "publicEntry": "designsystem/packages/library/src/index.ts"
+  },
+  "figma": {
+    "fileName": "Perifit (DS)",
+    "fileKey": "awxOdpSe6TuSOOOecbEATT",
+    "libraryKey": "lk-6771cb5b75d1478811bd4eead4b54eacd4acfb255fb3580a791c95fd67a75c9d5bf79547d91b9007580877dd995266d7479829a7b8dd34a5e286f9eda461dc7b",
+    "sourceUrl": "https://www.figma.com/design/awxOdpSe6TuSOOOecbEATT/Perifit--DS-?node-id=8-3",
+    "propertiesAccess": "unverified"
+  },
+  "policy": {
+    "allowedStatus": "matched",
+    "blockedStatuses": ["candidate", "unmapped", "conflict"],
+    "unknownComponent": "block",
+    "unknownVariant": "block",
+    "unknownToken": "block",
+    "hardcodedVisualValue": "forbidden-when-token-exists",
+    "localComponentRecreation": "forbidden-when-matched-component-exists",
+    "allowedImport": "@perifit/app-design-system",
+    "excludedScopes": ["icons", "images", "old"]
+  },
+  "components": [
+    {
+      "id": "button",
+      "figma": { "name": "Button", "key": "0d866625a36a1ac68322bf20e69b8f0541dbb67a", "assetType": "component_set" },
+      "code": { "export": "Button", "source": "designsystem/packages/library/src/components/common/button/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["variant:primary|secondary|inversed|link", "size:big|small", "disabled:boolean", "isLoading:boolean", "icon:ReactNode"]
+    },
+    {
+      "id": "button-icon",
+      "figma": { "name": "ButtonIcon", "key": "a1ed6b15f5f786c98b469cf04b13bbafd45493ac", "assetType": "component_set" },
+      "code": { "export": "IconButton", "source": "designsystem/packages/library/src/components/common/button/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["variant:primary|secondary|inversed|link", "size:big|small|verySmall", "disabled:boolean", "isLoading:boolean"]
+    },
+    {
+      "id": "badge",
+      "figma": { "name": "Badge", "key": "3f7586e1663a28770053264d8fdbc2cd83aba3d0", "assetType": "component_set" },
+      "code": { "export": "Badge", "source": "designsystem/packages/library/src/components/common/badge/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["variant:light|dark", "size:default|small", "tintIcon:boolean"]
+    },
+    {
+      "id": "check",
+      "figma": { "name": "Check", "key": "7c57419f83a8b921c4859ac2d45dbed6e3d18ec7", "assetType": "component_set" },
+      "code": { "export": "Check", "source": "designsystem/packages/library/src/components/common/check/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["checked:boolean", "type:default|circle", "size:number"]
+    },
+    {
+      "id": "confirmation",
+      "figma": { "name": "Confirmation", "key": "48d1615f150c062cfa76031f508a78c8885aae09", "assetType": "component_set" },
+      "code": { "export": "Confirmation", "source": "designsystem/packages/library/src/components/common/confirmation/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["type:success|error", "icon:ImageSource|ReactNode"]
+    },
+    {
+      "id": "text-field",
+      "figma": { "name": "TextField", "key": "6641e4a51a70aaaeb19f5871d18c72d7623e3dec", "assetType": "component_set" },
+      "code": { "export": "TextField", "source": "designsystem/packages/library/src/components/common/textField/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["showErrorMessage:boolean", "showHidePassword:boolean", "editable:boolean", "secureTextEntry:boolean"]
+    },
+    {
+      "id": "text-area",
+      "figma": { "name": "TextArea", "key": "a22166effde83614f43a4490908efb4c8cd55375", "assetType": "component_set" },
+      "code": { "export": "TextArea", "source": "designsystem/packages/library/src/components/common/textArea/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["editable:boolean", "maxLength:number", "minHeight:number", "error:string"]
+    },
+    {
+      "id": "select-field",
+      "figma": { "name": "Selectfield", "key": "376904df0457f1b759b343fd8f1caeac18f4e625", "assetType": "component_set" },
+      "code": { "export": "SelectField", "source": "designsystem/packages/library/src/components/common/selectField/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["editable:boolean", "error:string", "value:string"]
+    },
+    {
+      "id": "progress",
+      "figma": { "name": "Progress", "key": "bb34ad80fab5d9e6f2b475201d9ebcef582145ea", "assetType": "component_set" },
+      "code": { "export": "ProgressBar", "source": "designsystem/packages/library/src/components/common/progressBar/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["animated:boolean", "from:number", "to:number", "height:number", "duration:number"]
+    },
+    {
+      "id": "slider",
+      "figma": { "name": "Slider", "key": "a57414660debc14c00d548d85757d76fde4140a3", "assetType": "component_set" },
+      "code": { "export": "Slider", "source": "designsystem/packages/library/src/components/common/slider/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["value:number", "initialValue:number", "min:number", "max:number", "step:number", "disabled:boolean"]
+    },
+    {
+      "id": "tabs",
+      "figma": { "name": "Tabs", "key": "9eaca7c752b62d0d54e003e8cd2566ad3af2da15", "assetType": "component_set" },
+      "code": { "export": "Tabs", "source": "designsystem/packages/library/src/components/common/tabs/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["size:default|small", "selectedIndex:number"]
+    },
+    {
+      "id": "toggle",
+      "figma": { "name": "Toggle", "key": "d7777d0e56c99c55d83e0dfed5978962aef81754", "assetType": "component_set" },
+      "code": { "export": "Toggle", "source": "designsystem/packages/library/src/components/common/toggle/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["value:boolean", "disabled:boolean"]
+    },
+    {
+      "id": "list-item",
+      "figma": { "name": "List Item", "key": "eec50f8d1d6111c17c9b3b03a0b6b238794ad0d2", "assetType": "component_set" },
+      "code": { "export": "ListItem", "source": "designsystem/packages/library/src/components/common/listItem/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["disabled:boolean", "selected:boolean", "icon:ImageSource", "rightIcon:ImageSource|ReactNode", "showAlertDot:boolean"]
+    },
+    {
+      "id": "loader",
+      "figma": { "name": "Loader", "key": "b92009d2191b4426bc953cbf804b512a924929eb", "assetType": "component_set" },
+      "code": { "export": "Loader", "source": "designsystem/packages/library/src/components/common/loader/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["size:number", "title:string", "subtitle:string"]
+    },
+    {
+      "id": "bottom-sheet",
+      "figma": { "name": "BottomSheet", "key": "ccfe62a27fd7740fa088a7d5d9e8de77e92c6f91", "assetType": "component_set" },
+      "code": { "export": "BottomSheet", "source": "designsystem/packages/library/src/components/common/bottomSheet/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["visible:boolean", "mode:content|full", "showDragHandle:boolean", "showCloseButton:boolean", "backdropClosable:boolean"]
+    },
+    {
+      "id": "planning-date",
+      "figma": { "name": "Planning date", "key": "8a0c3f08960dbab09889a1702829646cea1cb099", "assetType": "component_set" },
+      "code": { "export": "PlanningDate", "source": "designsystem/packages/library/src/components/common/planningDate/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["variant:empty|emptyMarked|filled|filledMarked|disabled|emptyDashed", "size:number"]
+    },
+    {
+      "id": "info",
+      "figma": { "name": "Info", "key": "bc27505f89e3c9c61bf08fd25bf83f3ba41b18a4", "assetType": "component_set" },
+      "code": { "export": "Infos", "source": "designsystem/packages/library/src/components/common/infos/index.tsx" },
+      "status": "matched",
+      "figmaProperties": "unverified",
+      "verifiedCodeProps": ["badge:string", "emoji:ImageSource", "arrow:boolean", "link:string"]
+    },
+    {
+      "id": "alert",
+      "figma": { "name": "Alert", "key": "1cf0b18dea3a28aef1dbeb90f8aaefd8cad8750e", "assetType": "component_set" },
+      "codeCandidates": [
+        { "export": "Toast", "source": "designsystem/packages/library/src/components/common/toast/index.tsx" },
+        { "export": "Infos", "source": "designsystem/packages/library/src/components/common/infos/index.tsx" }
+      ],
+      "status": "candidate",
+      "reason": "Deux composants publics plausibles et aucune correspondance de variantes Figma vérifiable."
+    },
+    {
+      "id": "navbar-pump",
+      "figma": { "name": "Navbar - Pump", "key": "909a736a845453bc4b1346c7c21529cd5925fcea", "assetType": "component_set" },
+      "codeCandidates": [
+        { "export": "BottomNavBar", "source": "designsystem/packages/library/src/components/common/bottomNavBar/index.tsx" }
+      ],
+      "status": "candidate",
+      "reason": "La navigation code est plausible mais la structure et les variantes Pump ne sont pas vérifiées."
+    },
+    {
+      "id": "category-tab-bar",
+      "figma": { "name": "Category Tab Bar", "key": null, "assetType": "unresolved" },
+      "codeCandidates": [
+        { "export": "CategoryTabBar", "source": "designsystem/packages/library/src/components/common/content/categoryTabBar/index.tsx" }
+      ],
+      "status": "candidate",
+      "reason": "Le composant code existe, mais aucune clé de composant Figma distincte de Tabs n'a été confirmée."
+    },
+    {
+      "id": "checkmark",
+      "figma": { "name": "Checkmark", "key": null, "assetType": "unresolved" },
+      "codeCandidates": [
+        { "export": "Checkmark", "source": "designsystem/packages/library/src/components/common/checkmark/index.tsx" }
+      ],
+      "status": "candidate",
+      "reason": "Le composant code est ambigu par rapport aux variantes du composant Figma Check."
+    },
+    {
+      "id": "historical-component-duplicates",
+      "figma": { "name": "Historical component duplicates", "key": null, "assetType": "group" },
+      "status": "conflict",
+      "reason": "Les anciens doublons Figma doivent être arbitrés individuellement avant toute promotion vers matched."
+    },
+    {
+      "id": "buttons-group",
+      "figma": { "name": "ButtonsGroup", "key": "1e2505be93078192a19b4c81c93d344e85c1a4e6", "assetType": "component_set" },
+      "code": null,
+      "status": "unmapped",
+      "reason": "Pas d'export public DS confirmé."
+    },
+    {
+      "id": "social-button",
+      "figma": { "name": "Social button", "key": "fbbdb626574d07bb12e4896f0cbb49aecae4680a", "assetType": "component_set" },
+      "code": null,
+      "status": "unmapped",
+      "reason": "Pas d'export public DS confirmé."
+    },
+    {
+      "id": "list-block",
+      "figma": { "name": "List Block", "key": "e9f1b970a8bb9cd496fdb81d64724b9159246d17", "assetType": "component_set" },
+      "code": null,
+      "status": "unmapped",
+      "reason": "Pas d'export public DS confirmé."
+    },
+    {
+      "id": "pump",
+      "figma": { "name": "Pump", "key": "ebcd50ec22f6b8d7f6dc16b185c506fd5ca24696", "assetType": "component_set" },
+      "code": null,
+      "status": "unmapped",
+      "reason": "Pas d'export public DS confirmé."
+    },
+    {
+      "id": "badge-club-perifit",
+      "figma": { "name": "Badge Club Perifit", "key": "42ba8700065a2bc859aab874b2c477f2a486418b", "assetType": "component_set" },
+      "code": null,
+      "status": "unmapped",
+      "reason": "Le composant Badge générique ne suffit pas à confirmer cette composition."
+    },
+    {
+      "id": "objective-badge",
+      "figma": { "name": "Objective-badge", "key": "1c649181905e17aa88241b7f093da4c678afe430", "assetType": "component_set" },
+      "code": null,
+      "status": "unmapped",
+      "reason": "Pas d'export public DS confirmé."
+    },
+    {
+      "id": "code-content-components",
+      "figma": { "name": null, "key": null, "assetType": "code_only" },
+      "codeExports": ["PaywallOfferModal", "CategoryThumbnail", "HeroBanner", "ContentArticle", "ContentArticleThumbnail", "PopularArticleThumbnail", "ContentArticleBody", "ArticleRating", "TodayTips", "WelcomePremiumUser", "CachedImage", "CachedImageBackground"],
+      "status": "unmapped",
+      "reason": "Exports publics code sans correspondance Figma publiée confirmée."
+    }
+  ],
+  "tokenFamilies": [
+    {
+      "id": "colors-text",
+      "figma": { "patterns": ["Colors/Text/text-*"] },
+      "code": { "root": "themeColors.text", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["primary", "secondary", "active", "inactive", "disabled", "error", "warning", "success", "links", "inversedRemainsWhite", "inversedChangeBlack", "clubPerifit"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "colors-icon",
+      "figma": { "patterns": ["Colors/Icon/icon-*"] },
+      "code": { "root": "themeColors.icon", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["primary", "secondary", "active", "inactive", "disabled", "error", "success", "warning", "inversedRemainsWhite", "inversedChangeBlack", "clubPerifitChangeWhite", "clubPerifitRemainsBlack"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "colors-fill",
+      "figma": { "patterns": ["Colors/Fill/fill-*"] },
+      "code": { "root": "themeColors.fill", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["page", "block", "blockRemainsWhite", "primary", "secondary", "dark", "active", "greenScreen", "activeReversed", "disabled", "selected", "success", "successLight", "warning", "warningLight", "error", "errorLight", "hover", "overlay", "gradientColor", "gradientFadePage", "gradientFadeBlock", "gradientFade", "gradientCurve"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "colors-border",
+      "figma": { "patterns": ["Colors/Border/border-*"] },
+      "code": { "root": "themeColors.border", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["primary", "secondary", "primaryInversed", "error", "warning", "success", "selected", "active"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "colors-button",
+      "figma": { "patterns": ["Colors/Button/button-*"] },
+      "code": { "root": "themeColors.button", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["primaryFillDefault", "primaryFillHover", "primaryFillDisabled", "primaryTextDefault", "primaryTextDisabled", "secondaryFillDefault", "secondaryFillHover", "secondaryFillDisabled", "secondaryTextDefault", "secondaryTextDisabled", "inversedDefault", "inversedHover", "inversedDisabled", "inversedTextDefault", "inversedTextDisabled", "appleFill", "appleText", "googleFill", "googleText", "facebookFill", "facebookText"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "colors-nav",
+      "figma": { "patterns": ["Colors/Nav/nav-*"] },
+      "code": { "root": "themeColors.nav", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["activeText", "activeBorder", "activeFill", "inactiveText", "inactiveBorder", "inactiveFill"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "colors-pump",
+      "figma": { "patterns": ["Colors/Pump/pump-*"] },
+      "code": { "root": "themeColors.pump", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["pumpLeftFill", "pumpLeftText", "pumpLeftSlider", "pumpLeftWave", "pumpLeftWaveBG", "pumpRightFill", "pumpRightText", "pumpRightSlider", "pumpRightWave", "pumpRightWaveBG", "haloStimulation", "haloExpression"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel",
+      "codeKeyPrefix": "pump"
+    },
+    {
+      "id": "colors-objective",
+      "figma": { "patterns": ["Colors/Objective/objective-*"] },
+      "code": { "root": "themeColors.objective", "source": "designsystem/packages/library/src/themes/types.ts", "keys": ["objective1Background", "objective1Text", "objective2Background", "objective2Text", "objective3Background", "objective3Text", "objective4Background", "objective4Text", "objective5Background", "objective5Text", "objective6Background", "objective6Text"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel",
+      "codeKeyPrefix": "objective"
+    },
+    {
+      "id": "spacing",
+      "figma": { "patterns": ["Spacing/spacing-*"] },
+      "code": { "root": "spacing", "source": "designsystem/packages/library/src/themes/spacing.ts", "keys": ["none", "xs3", "xs2", "xs", "s", "md", "lg", "xl"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel",
+      "aliases": { "3xs": "xs3", "2xs": "xs2" }
+    },
+    {
+      "id": "gap",
+      "figma": { "patterns": ["Gap/gap-*"] },
+      "code": { "root": "gap", "source": "designsystem/packages/library/src/themes/spacing.ts", "keys": ["xs", "s", "md", "xmd", "lg", "xl", "button", "form"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "radius",
+      "figma": { "patterns": ["Radius/radius-*"] },
+      "code": { "root": "radius", "source": "designsystem/packages/library/src/themes/spacing.ts", "keys": ["none", "xs", "s", "md", "lg", "xl"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    },
+    {
+      "id": "icon-size",
+      "figma": { "patterns": ["Icon Size/iconSize-*", "Icon Size/icon-*"] },
+      "code": { "root": "iconSize", "source": "designsystem/packages/library/src/themes/iconSize.ts", "keys": ["xs", "s", "md", "lg", "xl"] },
+      "status": "matched",
+      "keyTransform": "kebab-to-camel"
+    }
+  ],
+  "exactTokens": [
+    { "id": "brand-1", "figma": { "name": "Brand 1" }, "code": { "expression": "brandToken.brand1", "source": "designsystem/packages/library/src/themes/brandToken.ts", "key": "brand1" }, "status": "matched" },
+    { "id": "brand-2", "figma": { "name": "Brand 2" }, "code": { "expression": "brandToken.brand2", "source": "designsystem/packages/library/src/themes/brandToken.ts", "key": "brand2" }, "status": "matched" },
+    { "id": "brand-3", "figma": { "name": "Brand 3" }, "code": { "expression": "brandToken.brand3", "source": "designsystem/packages/library/src/themes/brandToken.ts", "key": "brand3" }, "status": "matched" },
+    { "id": "heading-h1", "figma": { "name": "Heading/H1" }, "code": { "expression": "typography.h1", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "h1" }, "status": "matched" },
+    { "id": "heading-h2", "figma": { "name": "Heading/H2" }, "code": { "expression": "typography.h2", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "h2" }, "status": "matched" },
+    { "id": "heading-h3", "figma": { "name": "Heading/H3" }, "code": { "expression": "typography.h3", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "h3" }, "status": "matched" },
+    { "id": "heading-h4", "figma": { "name": "Heading/H4" }, "code": { "expression": "typography.h4", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "h4" }, "status": "matched" },
+    { "id": "heading-h5", "figma": { "name": "Heading/H5" }, "code": { "expression": "typography.h5", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "h5" }, "status": "matched" },
+    { "id": "heading-category", "figma": { "name": "Heading/Category" }, "code": { "expression": "typography.category", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "category" }, "status": "matched" },
+    { "id": "subtitle-regular", "figma": { "name": "Subtitle/Regular" }, "code": { "expression": "typography.subtitle", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "subtitle" }, "status": "matched" },
+    { "id": "body-regular", "figma": { "name": "Body/Regular" }, "code": { "expression": "typography.body", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "body" }, "status": "matched" },
+    { "id": "body-underline", "figma": { "name": "Body/Underline" }, "code": { "expression": "typography.bodyUnderline", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "bodyUnderline" }, "status": "matched" },
+    { "id": "body-strikethrough", "figma": { "name": "Body/Strikethrough" }, "code": { "expression": "typography.bodyStrikethrough", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "bodyStrikethrough" }, "status": "matched" },
+    { "id": "caption-regular", "figma": { "name": "Caption/Regular" }, "code": { "expression": "typography.caption", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "caption" }, "status": "matched" },
+    { "id": "caption-underline", "figma": { "name": "Caption/Underline" }, "code": { "expression": "typography.captionUnderline", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "captionUnderline" }, "status": "matched" },
+    { "id": "caption-strikethrough", "figma": { "name": "Caption/Strikethrough" }, "code": { "expression": "typography.captionStrikethrough", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "captionStrikethrough" }, "status": "matched" },
+    { "id": "caption-semi", "figma": { "name": "Caption/Semi" }, "code": { "expression": "typography.captionSemi", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "captionSemi" }, "status": "matched" },
+    { "id": "data-big", "figma": { "name": "Data/Big" }, "code": { "expression": "typography.big", "source": "designsystem/packages/library/src/themes/typography.ts", "key": "big" }, "status": "candidate", "reason": "Le style code big existe, mais le style Figma Data/Big n'est pas vérifiable via Code Connect." }
+  ],
+  "tokenConflicts": [
+    { "id": "new-spacing", "figma": { "patterns": ["Spacing/NEW-*"] }, "status": "conflict", "reason": "Doublon de la collection historique de tailles." },
+    { "id": "new-gap", "figma": { "patterns": ["Gap/NEW-*"] }, "status": "conflict", "reason": "Doublon de la collection historique de tailles." },
+    { "id": "new-radius", "figma": { "patterns": ["Radius/NEW-*"] }, "status": "conflict", "reason": "Doublon de la collection historique de tailles." },
+    { "id": "new-icon-size", "figma": { "patterns": ["Icon Size/NEW-*"] }, "status": "conflict", "reason": "Doublon de la collection historique de tailles." }
+  ],
+  "requiredBlockingChecks": {
+    "components": ["Alert", "Navbar - Pump"],
+    "tokens": ["Spacing/NEW-md", "Gap/NEW-md", "Radius/NEW-md", "Icon Size/NEW-md"],
+    "unknownComponent": "__UNKNOWN_COMPONENT__",
+    "unknownVariant": { "component": "Button", "variant": "__UNKNOWN_VARIANT__" }
+  }
+}

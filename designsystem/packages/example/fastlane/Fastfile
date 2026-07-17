@@ -1,0 +1,122 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  # Private lane to select a device
+  private_lane :_select_device do
+    # 1. Get connected physical devices
+    devices_output = sh("xcrun xctrace list devices", log: false)
+    devices = []
+    in_devices_section = false
+
+    UI.message("Devices output: #{devices_output}")
+
+    devices_output.each_line do |line|
+      if line.strip == "== Devices =="
+        in_devices_section = true
+        next
+      elsif line.strip.start_with?("==") && in_devices_section
+        in_devices_section = false
+        break
+      end
+
+      if in_devices_section
+        UI.message("Line: #{line}")
+        # Regex to capture: Device Name (OS Version) (UDID)
+        # UDID can be a long hex string (physical device) or a UUID (sometimes reported for physical devices too)
+        match = line.match(/^\s*(.*?)\s+\(([^)]+)\)\s+\(([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}|[0-9A-F]{8}-[0-9A-F]{16}|[0-9A-F]{40})\)/i)
+        if match
+          name = match[1].strip
+          os_version = match[2].strip
+          udid = match[3].strip
+          devices << { name: name, os: os_version, udid: udid }
+        end
+      end
+    end
+
+    if devices.empty?
+      UI.user_error!("No connected iOS physical devices found by 'xcrun xctrace list devices'. Ensure devices are connected, trusted, and enabled for development.")
+    end
+
+    selected_index = -1
+
+    if devices.length == 1
+      selected_index = 0
+      UI.message("Auto-selecting the only connected device: #{devices[0][:name]}")
+    else
+      # 2. Prompt user for selection
+      choices_for_prompt = devices.map.with_index { |dev, i| "#{i + 1}. #{dev[:name]} (OS: #{dev[:os]}, UDID: #{dev[:udid]})" }
+
+      selection_text = "Please select a device by number:\n" + choices_for_prompt.join("\n")
+      user_choice_str = prompt(
+        text: selection_text,
+        ci_input: "1" # Default to first device for CI environments
+      )
+
+      begin
+        selected_index = Integer(user_choice_str) - 1
+        if selected_index < 0 || selected_index >= devices.length
+          UI.user_error!("Invalid selection: '#{user_choice_str}'. Please pick a number from 1 to #{devices.length}.")
+        end
+      rescue ArgumentError
+        UI.user_error!("Invalid input: '#{user_choice_str}'. Please enter a number.")
+      end
+    end
+
+    selected_device = devices[selected_index]
+    UI.message("Selected device: #{selected_device[:name]} (UDID: #{selected_device[:udid]})")
+
+    next { udid: selected_device[:udid], name: selected_device[:name] } # Return selected UDID and name
+  end
+
+  desc "Build and run the app on a selected real device"
+  lane :run_ios do
+    selection_result = _select_device
+    selected_udid = selection_result[:udid]
+
+    app_scheme = "example"
+
+    build_ios_app(
+      workspace: "ios/example.xcworkspace",
+      configuration: "Debug",
+      scheme: app_scheme,
+      clean: false,
+      skip_package_ipa: true,
+      skip_archive: true,
+      destination: "id=#{selected_udid}"
+    )
+
+    derived_data = File.expand_path("~/Library/Developer/Xcode/DerivedData")
+    app_path = Dir["#{derived_data}/**/Build/Products/Debug-iphoneos/example.app"].first
+
+    sh("ios-deploy --bundle \"#{app_path}\" --id #{selected_udid} --justlaunch")
+  end
+
+  desc "Deploy the app to a selected real device"
+  lane :deploy_ios do
+    selection_result = _select_device
+    selected_udid = selection_result[:udid]
+    derived_data = File.expand_path("~/Library/Developer/Xcode/DerivedData")
+    app_path = Dir["#{derived_data}/**/Build/Products/Debug-iphoneos/example.app"].first
+
+    if app_path.nil? || !File.exist?(app_path)
+      UI.user_error!("Could not find a pre-built .app file in DerivedData. Please build the app first (e.g., using the 'run_ios' lane or Xcode). Searched in: #{derived_data}/**/Build/Products/Debug-iphoneos/example.app")
+    end
+
+    sh("ios-deploy --bundle \"#{app_path}\" --id #{selected_udid} --justlaunch")
+  end
+end

@@ -1,0 +1,48 @@
+declare const Images: {
+  contentTab: {
+    premiumIcon: ImageRequireSource;
+    premiumLargeIcon: ImageRequireSource;
+    premiumBackgroundImage: ImageRequireSource;
+  };
+  animatedLoadingCircle: ImageRequireSource;
+  arrowNextIcon: ImageRequireSource;
+  checkEmptyIcon: ImageRequireSource;
+  checkIcon: ImageRequireSource;
+  checkmarkBigIcon: ImageRequireSource;
+  checkmarkBorderBigIcon: ImageRequireSource;
+  checkmarkSmallIcon: ImageRequireSource;
+  chevronIcon: ImageRequireSource;
+  closeIcon: ImageRequireSource;
+  communityIcon: ImageRequireSource;
+  communitySelectedIcon: ImageRequireSource;
+  closeCircleIcon: ImageRequireSource;
+  exerciseIcon: ImageRequireSource;
+  exerciseSelectedIcon: ImageRequireSource;
+  eyeIcon: ImageRequireSource;
+  helpIcon: ImageRequireSource;
+  hiddenIcon: ImageRequireSource;
+  hidePasswordIcon: ImageRequireSource;
+  homeIcon: ImageRequireSource;
+  homeSelectedIcon: ImageRequireSource;
+  infoIcon: ImageRequireSource;
+  lockIcon: ImageRequireSource;
+  minusSquareIcon: ImageRequireSource;
+  notificationIcon: ImageRequireSource;
+  pauseCircleIcon: ImageRequireSource;
+  pencilIcon: ImageRequireSource;
+  plusEmptyIcon: ImageRequireSource;
+  plusCircleIcon: ImageRequireSource;
+  progressIcon: ImageRequireSource;
+  progressSelectedIcon: ImageRequireSource;
+  pumpLeftIcon: ImageRequireSource;
+  pumpRightIcon: ImageRequireSource;
+  refreshIcon: ImageRequireSource;
+  settingsIcon: ImageRequireSource;
+  showPasswordIcon: ImageRequireSource;
+  trashIcon: ImageRequireSource;
+  whiteCheckIcon: ImageRequireSource;
+  thumbUp: ImageRequireSource;
+  thumbDown: ImageRequireSource;
+};
+
+export default Images;
