@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   Easing,
   FlatList,
@@ -16,7 +17,18 @@ import {
   Text,
   View,
 } from 'react-native';
+import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import Reanimated, {
+  Easing as ReanimatedEasing,
+  cancelAnimation,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import {
   Button,
@@ -63,6 +75,55 @@ const QUESTION_STEPS = new Set<Step>([
   'menstrualStatus',
 ]);
 const SCREEN_TRANSITION_DURATION = 320;
+const PRIVACY_WELCOME_TRANSITION_DURATION = 260;
+const PRIVACY_WELCOME_PULSE_DURATION = 40;
+const PRIVACY_WELCOME_MERGE_DURATION = 70;
+const PRIVACY_WELCOME_RISE_DURATION = 150;
+const PRIVACY_WELCOME_LABEL_FADE_DURATION = 40;
+const WELCOME_REVEAL_DELAY = 160;
+const WELCOME_LOGO_RISE_DURATION = 170;
+const WELCOME_LOGO_SETTLE_DURATION = 70;
+const WELCOME_WAVE_START = WELCOME_REVEAL_DELAY + WELCOME_LOGO_RISE_DURATION;
+const WELCOME_RING_PULSE_RISE_DURATION = 100;
+const WELCOME_RING_PULSE_SETTLE_DURATION = 100;
+const WELCOME_RING_RISE_DURATION = 210;
+const WELCOME_RING_CONTRACT_DURATION = 80;
+const WELCOME_RING_SETTLE_DURATION = 55;
+const WELCOME_RING_OPACITY = 0.05;
+const WELCOME_RING_PEAK_OPACITY = 0.09;
+const WELCOME_RING_OVERSHOOT_SCALE = 1.05;
+const WELCOME_RING_CONTRACT_SCALE = 0.985;
+const WELCOME_RING_DELAYS = [
+  WELCOME_WAVE_START + 80,
+  WELCOME_WAVE_START + 40,
+  WELCOME_WAVE_START,
+] as const;
+const WELCOME_RING_INITIAL_SCALES = [0.26, 0.35, 0.51] as const;
+const WELCOME_AVATAR_DURATION = 190;
+const WELCOME_AVATAR_DELAYS = [
+  WELCOME_WAVE_START + 110,
+  WELCOME_WAVE_START + 75,
+  WELCOME_WAVE_START + 35,
+  WELCOME_WAVE_START + 75,
+] as const;
+const WELCOME_COPY_DELAY = WELCOME_WAVE_START + 230;
+const WELCOME_COPY_DURATION = 300;
+const WELCOME_COPY_RISE_DURATION = 240;
+const WELCOME_COPY_SETTLE_DURATION = 90;
+const WELCOME_BUTTON_DELAY = WELCOME_WAVE_START + 290;
+const WELCOME_BUTTON_DURATION = 240;
+
+type MeasuredFrame = {
+  height: number;
+  width: number;
+  x: number;
+  y: number;
+};
+
+type PrivacyWelcomeTransition = {
+  buttonFrame: MeasuredFrame;
+  hostFrame: MeasuredFrame;
+};
 
 const DEFAULT_BIRTH_YEAR = 1985;
 const TICK_WIDTH = normalize(15);
@@ -118,19 +179,20 @@ const PRIVACY_COPY = [
 function ScreenShell({
   children,
   backgroundColor,
+  showStatusBar = true,
 }: {
   children: React.ReactNode;
   backgroundColor: string;
+  showStatusBar?: boolean;
 }): React.JSX.Element {
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
       style={[styles.safeArea, { backgroundColor }]}
     >
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={backgroundColor}
-      />
+      {showStatusBar ? (
+        <StatusBar barStyle="dark-content" backgroundColor={backgroundColor} />
+      ) : null}
       <View style={styles.deviceFrame}>{children}</View>
     </SafeAreaView>
   );
@@ -229,9 +291,7 @@ function TitleBlock({
     <View style={styles.titleBlock}>
       <Text style={typography.h2}>{title}</Text>
       {subtitle ? (
-        <Text
-          style={[typography.body, { color: themeColors.text.primary }]}
-        >
+        <Text style={[typography.body, { color: themeColors.text.primary }]}>
           {subtitle}
         </Text>
       ) : null}
@@ -249,10 +309,7 @@ function BottomActionGroup({
   return (
     <View style={styles.bottomActionGroup}>
       <LinearGradient
-        colors={[
-          themeColors.fill.gradientFadePage,
-          themeColors.fill.page,
-        ]}
+        colors={[themeColors.fill.gradientFadePage, themeColors.fill.page]}
         end={{ x: 0, y: 1 }}
         locations={[0, 0.175]}
         pointerEvents="none"
@@ -276,24 +333,19 @@ function SocialButton({
   const backgroundColor = isGoogle
     ? themeColors.button.googleFill
     : platform === 'facebook'
-      ? themeColors.button.facebookFill
-      : themeColors.button.appleFill;
+    ? themeColors.button.facebookFill
+    : themeColors.button.appleFill;
   const textColor = isGoogle
     ? themeColors.button.googleText
     : platform === 'facebook'
-      ? themeColors.button.facebookText
-      : themeColors.button.appleText;
+    ? themeColors.button.facebookText
+    : themeColors.button.appleText;
 
   return (
     <Button
       title={title}
       onPress={() => {}}
-      icon={
-        <Image
-          source={SOCIAL_ICONS[platform]}
-          style={styles.socialIcon}
-        />
-      }
+      icon={<Image source={SOCIAL_ICONS[platform]} style={styles.socialIcon} />}
       style={[
         styles.socialButton,
         { backgroundColor },
@@ -338,18 +390,9 @@ function AuthScreen({
           <Text style={typography.h2}>Sign in your Account</Text>
 
           <View style={styles.socialStack}>
-            <SocialButton
-              platform="google"
-              title="Sign in with Google"
-            />
-            <SocialButton
-              platform="facebook"
-              title="Sign in with Facebook"
-            />
-            <SocialButton
-              platform="apple"
-              title="Sign up with Apple"
-            />
+            <SocialButton platform="google" title="Sign in with Google" />
+            <SocialButton platform="facebook" title="Sign in with Facebook" />
+            <SocialButton platform="apple" title="Sign up with Apple" />
           </View>
 
           <View style={styles.dividerRow}>
@@ -433,17 +476,19 @@ function AuthScreen({
   }
 
   return (
-    <ScreenShell backgroundColor={themeColors.fill.page}>
-      {content}
-    </ScreenShell>
+    <ScreenShell backgroundColor={themeColors.fill.page}>{content}</ScreenShell>
   );
 }
 
 function PrivacyScreen({
+  acceptButtonRef,
+  acceptHidden = false,
   contentOnly = false,
   onAccept,
   onBack,
 }: {
+  acceptButtonRef?: React.RefObject<View | null>;
+  acceptHidden?: boolean;
   contentOnly?: boolean;
   onAccept: () => void;
   onBack: () => void;
@@ -457,31 +502,37 @@ function PrivacyScreen({
       ) : (
         <FlowHeader onBack={onBack} onHelp={() => {}} />
       )}
-        <ScrollView
-          contentContainerStyle={styles.privacyContent}
-          showsVerticalScrollIndicator={false}
+      <ScrollView
+        contentContainerStyle={styles.privacyContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <TitleBlock
+          title="Privacy policy"
+          subtitle="We respect your privacy. Here's how we handle your data."
+        />
+        <View style={styles.privacyCopy}>
+          {PRIVACY_COPY.map(paragraph => (
+            <Text key={paragraph} style={typography.body}>
+              {paragraph}
+            </Text>
+          ))}
+        </View>
+      </ScrollView>
+      <BottomActionGroup>
+        <View
+          collapsable={false}
+          ref={acceptButtonRef}
+          style={acceptHidden ? styles.hiddenAcceptButton : null}
+          testID="privacy-accept-anchor"
         >
-          <TitleBlock
-            title="Privacy policy"
-            subtitle="We respect your privacy. Here's how we handle your data."
-          />
-          <View style={styles.privacyCopy}>
-            {PRIVACY_COPY.map(paragraph => (
-              <Text
-                key={paragraph}
-                style={typography.body}
-              >
-                {paragraph}
-              </Text>
-            ))}
-          </View>
-        </ScrollView>
-        <BottomActionGroup>
           <Button
+            accessibilityLabel="Accept privacy policy"
+            disabled={acceptHidden}
             title="Accept"
             onPress={onAccept}
           />
-        </BottomActionGroup>
+        </View>
+      </BottomActionGroup>
     </View>
   );
 
@@ -490,17 +541,289 @@ function PrivacyScreen({
   }
 
   return (
-    <ScreenShell backgroundColor={themeColors.fill.page}>
-      {content}
-    </ScreenShell>
+    <ScreenShell backgroundColor={themeColors.fill.page}>{content}</ScreenShell>
   );
 }
 
-function OrbitingWelcome({ onStart }: { onStart: () => void }) {
-  const { themeColors, typography } = useTheme();
-  const progress = useRef(new Animated.Value(0)).current;
+function WelcomeRing({
+  animateEntrance,
+  backgroundColor,
+  delay,
+  initialScale,
+  style,
+}: {
+  animateEntrance: boolean;
+  backgroundColor: string;
+  delay: number;
+  initialScale: number;
+  style: StyleProp<ViewStyle>;
+}): React.JSX.Element {
+  const opacity = useSharedValue(animateEntrance ? 0 : WELCOME_RING_OPACITY);
+  const scale = useSharedValue(animateEntrance ? initialScale : 1);
 
   useEffect(() => {
+    if (!animateEntrance) {
+      opacity.value = WELCOME_RING_OPACITY;
+      scale.value = 1;
+      return;
+    }
+
+    opacity.value = 0;
+    scale.value = initialScale;
+    opacity.value = withDelay(
+      delay,
+      withSequence(
+        withTiming(WELCOME_RING_PEAK_OPACITY, {
+          duration: WELCOME_RING_PULSE_RISE_DURATION,
+          easing: ReanimatedEasing.out(ReanimatedEasing.quad),
+        }),
+        withTiming(WELCOME_RING_OPACITY, {
+          duration: WELCOME_RING_PULSE_SETTLE_DURATION,
+          easing: ReanimatedEasing.inOut(ReanimatedEasing.quad),
+        }),
+      ),
+    );
+    scale.value = withDelay(
+      delay,
+      withSequence(
+        withTiming(WELCOME_RING_OVERSHOOT_SCALE, {
+          duration: WELCOME_RING_RISE_DURATION,
+          easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+        }),
+        withTiming(WELCOME_RING_CONTRACT_SCALE, {
+          duration: WELCOME_RING_CONTRACT_DURATION,
+          easing: ReanimatedEasing.inOut(ReanimatedEasing.cubic),
+        }),
+        withTiming(1, {
+          duration: WELCOME_RING_SETTLE_DURATION,
+          easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+        }),
+      ),
+    );
+
+    return () => {
+      cancelAnimation(opacity);
+      cancelAnimation(scale);
+    };
+  }, [animateEntrance, delay, initialScale, opacity, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Reanimated.View
+      style={[styles.ring, style, { backgroundColor }, animatedStyle]}
+    />
+  );
+}
+
+function WelcomeAvatar({
+  animateEntrance,
+  counterRotation,
+  delay,
+  position,
+  source,
+}: {
+  animateEntrance: boolean;
+  counterRotation: Animated.AnimatedInterpolation<string | number>;
+  delay: number;
+  position: StyleProp<ViewStyle>;
+  source: ImageSourcePropType;
+}): React.JSX.Element {
+  const opacity = useSharedValue(animateEntrance ? 0 : 1);
+  const scale = useSharedValue(animateEntrance ? 0.9 : 1);
+
+  useEffect(() => {
+    if (!animateEntrance) {
+      opacity.value = 1;
+      scale.value = 1;
+      return;
+    }
+
+    opacity.value = 0;
+    scale.value = 0.9;
+    opacity.value = withDelay(
+      delay,
+      withTiming(1, {
+        duration: WELCOME_AVATAR_DURATION,
+        easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+      }),
+    );
+    scale.value = withDelay(
+      delay,
+      withTiming(1, {
+        duration: WELCOME_AVATAR_DURATION,
+        easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+      }),
+    );
+
+    return () => {
+      cancelAnimation(opacity);
+      cancelAnimation(scale);
+    };
+  }, [animateEntrance, delay, opacity, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Reanimated.View
+      style={[styles.avatar, position, animatedStyle]}
+      testID="welcome-avatar"
+    >
+      <Animated.Image
+        source={source}
+        style={[styles.fillImage, { transform: [{ rotate: counterRotation }] }]}
+      />
+    </Reanimated.View>
+  );
+}
+
+function OrbitingWelcome({
+  animateEntrance = false,
+  animateOrbit = true,
+  onEntranceComplete,
+  onStart,
+  showStatusBar = true,
+}: {
+  animateEntrance?: boolean;
+  animateOrbit?: boolean;
+  onEntranceComplete?: () => void;
+  onStart: () => void;
+  showStatusBar?: boolean;
+}) {
+  const { themeColors, typography } = useTheme();
+  const progress = useRef(new Animated.Value(0)).current;
+  const logoOpacity = useSharedValue(animateEntrance ? 0 : 1);
+  const logoScale = useSharedValue(animateEntrance ? 0.92 : 1);
+  const copyOpacity = useSharedValue(animateEntrance ? 0 : 1);
+  const copyTranslateY = useSharedValue(animateEntrance ? spacing.md : 0);
+  const buttonOpacity = useSharedValue(animateEntrance ? 0 : 1);
+  const buttonTranslateY = useSharedValue(animateEntrance ? spacing.s : 0);
+
+  useEffect(() => {
+    if (!animateEntrance) {
+      logoOpacity.value = 1;
+      logoScale.value = 1;
+      copyOpacity.value = 1;
+      copyTranslateY.value = 0;
+      buttonOpacity.value = 1;
+      buttonTranslateY.value = 0;
+      return;
+    }
+
+    logoOpacity.value = 0;
+    logoScale.value = 0.92;
+    copyOpacity.value = 0;
+    copyTranslateY.value = spacing.md;
+    buttonOpacity.value = 0;
+    buttonTranslateY.value = spacing.s;
+
+    logoOpacity.value = withDelay(
+      WELCOME_REVEAL_DELAY,
+      withTiming(1, {
+        duration: WELCOME_LOGO_RISE_DURATION,
+        easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+      }),
+    );
+    logoScale.value = withDelay(
+      WELCOME_REVEAL_DELAY,
+      withSequence(
+        withTiming(1.02, {
+          duration: WELCOME_LOGO_RISE_DURATION,
+          easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+        }),
+        withTiming(1, {
+          duration: WELCOME_LOGO_SETTLE_DURATION,
+          easing: ReanimatedEasing.inOut(ReanimatedEasing.cubic),
+        }),
+      ),
+    );
+    copyOpacity.value = withDelay(
+      WELCOME_COPY_DELAY,
+      withTiming(1, {
+        duration: WELCOME_COPY_DURATION,
+        easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+      }),
+    );
+    copyTranslateY.value = withDelay(
+      WELCOME_COPY_DELAY,
+      withSequence(
+        withTiming(-spacing.xs3, {
+          duration: WELCOME_COPY_RISE_DURATION,
+          easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+        }),
+        withTiming(0, {
+          duration: WELCOME_COPY_SETTLE_DURATION,
+          easing: ReanimatedEasing.inOut(ReanimatedEasing.cubic),
+        }),
+      ),
+    );
+    buttonTranslateY.value = withDelay(
+      WELCOME_BUTTON_DELAY,
+      withTiming(0, {
+        duration: WELCOME_BUTTON_DURATION,
+        easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+      }),
+    );
+    buttonOpacity.value = withDelay(
+      WELCOME_BUTTON_DELAY,
+      withTiming(
+        1,
+        {
+          duration: WELCOME_BUTTON_DURATION,
+          easing: ReanimatedEasing.out(ReanimatedEasing.cubic),
+        },
+        finished => {
+          if (finished && onEntranceComplete) {
+            runOnJS(onEntranceComplete)();
+          }
+        },
+      ),
+    );
+
+    return () => {
+      cancelAnimation(buttonOpacity);
+      cancelAnimation(buttonTranslateY);
+      cancelAnimation(copyOpacity);
+      cancelAnimation(copyTranslateY);
+      cancelAnimation(logoOpacity);
+      cancelAnimation(logoScale);
+    };
+  }, [
+    animateEntrance,
+    buttonOpacity,
+    buttonTranslateY,
+    copyOpacity,
+    copyTranslateY,
+    logoOpacity,
+    logoScale,
+    onEntranceComplete,
+  ]);
+
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+    transform: [{ scale: logoScale.value }],
+  }));
+  const copyAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: copyOpacity.value,
+    transform: [{ translateY: copyTranslateY.value }],
+  }));
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ translateY: buttonTranslateY.value }],
+  }));
+
+  useEffect(() => {
+    if (!animateOrbit) {
+      progress.setValue(0);
+      return;
+    }
+
     const animation = Animated.loop(
       Animated.timing(progress, {
         duration: 18000,
@@ -510,7 +833,7 @@ function OrbitingWelcome({ onStart }: { onStart: () => void }) {
     );
     animation.start();
     return () => animation.stop();
-  }, [progress]);
+  }, [animateOrbit, progress]);
 
   const rotation = progress.interpolate({
     inputRange: [0, 1],
@@ -521,99 +844,294 @@ function OrbitingWelcome({ onStart }: { onStart: () => void }) {
     outputRange: ['0deg', '-360deg'],
   });
 
-  return (
-    <ScreenShell backgroundColor={themeColors.fill.greenScreen}>
-      <View style={styles.welcomeContent}>
-        <View style={styles.orbitArea}>
-          <View
-            style={[
-              styles.ring,
-              styles.ringOuter,
-              { backgroundColor: themeColors.text.primary },
-            ]}
-          />
-          <View
-            style={[
-              styles.ring,
-              styles.ringMiddle,
-              { backgroundColor: themeColors.text.primary },
-            ]}
-          />
-          <View
-            style={[
-              styles.ring,
-              styles.ringInner,
-              { backgroundColor: themeColors.text.primary },
-            ]}
-          />
+  const content = (
+    <Reanimated.View style={styles.welcomeContent} testID="welcome-content">
+      <View style={styles.orbitArea}>
+        <WelcomeRing
+          animateEntrance={animateEntrance}
+          backgroundColor={themeColors.text.primary}
+          delay={WELCOME_RING_DELAYS[0]}
+          initialScale={WELCOME_RING_INITIAL_SCALES[0]}
+          style={styles.ringOuter}
+        />
+        <WelcomeRing
+          animateEntrance={animateEntrance}
+          backgroundColor={themeColors.text.primary}
+          delay={WELCOME_RING_DELAYS[1]}
+          initialScale={WELCOME_RING_INITIAL_SCALES[1]}
+          style={styles.ringMiddle}
+        />
+        <WelcomeRing
+          animateEntrance={animateEntrance}
+          backgroundColor={themeColors.text.primary}
+          delay={WELCOME_RING_DELAYS[2]}
+          initialScale={WELCOME_RING_INITIAL_SCALES[2]}
+          style={styles.ringInner}
+        />
+        <Reanimated.View style={[styles.lotus, logoAnimatedStyle]}>
           <Image
             accessibilityLabel="Perifit lotus"
             source={require('./assets/perifit-lotus.png')}
-            style={styles.lotus}
+            style={styles.fillImage}
           />
-          <Animated.View
-            accessibilityLabel="Orbiting avatars"
-            style={[styles.avatarOrbit, { transform: [{ rotate: rotation }] }]}
-          >
-            {AVATARS.map((avatar, index) => (
-              <Animated.Image
-                key={index}
-                source={avatar}
-                style={[
-                  styles.avatar,
-                  avatarPositions[index],
-                  { transform: [{ rotate: counterRotation }] },
-                ]}
-              />
-            ))}
-          </Animated.View>
-        </View>
+        </Reanimated.View>
+        <Animated.View
+          accessibilityLabel="Orbiting avatars"
+          style={[styles.avatarOrbit, { transform: [{ rotate: rotation }] }]}
+        >
+          {AVATARS.map((avatar, index) => (
+            <WelcomeAvatar
+              animateEntrance={animateEntrance}
+              counterRotation={counterRotation}
+              delay={WELCOME_AVATAR_DELAYS[index]}
+              key={index}
+              position={avatarPositions[index]}
+              source={avatar}
+            />
+          ))}
+        </Animated.View>
+      </View>
 
-        <View style={styles.welcomeCopy}>
-          <Text
-            style={[
-              typography.h1,
-              {
-                color: themeColors.text.inversedRemainsWhite,
-              },
-              styles.centeredText,
-            ]}
-          >
-            Welcome Sophie
-          </Text>
-          <Text
-            style={[
-              typography.body,
-              {
-                color: themeColors.text.inversedRemainsWhite,
-              },
-              styles.centeredText,
-            ]}
-          >
-            Your journey toward a healthier pelvic floor is about to start.
-          </Text>
-        </View>
+      <Reanimated.View style={[styles.welcomeCopy, copyAnimatedStyle]}>
+        <Text
+          style={[
+            typography.h1,
+            {
+              color: themeColors.text.inversedRemainsWhite,
+            },
+            styles.centeredText,
+          ]}
+        >
+          Welcome Sophie
+        </Text>
+        <Text
+          style={[
+            typography.body,
+            {
+              color: themeColors.text.inversedRemainsWhite,
+            },
+            styles.centeredText,
+          ]}
+        >
+          Your journey toward a healthier pelvic floor is about to start.
+        </Text>
+      </Reanimated.View>
 
+      <Reanimated.View style={buttonAnimatedStyle}>
         <Button
           title="Start"
           onPress={onStart}
           variant="inversed"
           style={styles.welcomeButton}
         />
-      </View>
+      </Reanimated.View>
+    </Reanimated.View>
+  );
+
+  return (
+    <ScreenShell
+      backgroundColor={themeColors.fill.greenScreen}
+      showStatusBar={showStatusBar}
+    >
+      {content}
     </ScreenShell>
   );
 }
 
-function ProductScreen({
-  onContinue,
-}: {
-  onContinue: () => void;
-}) {
+function PrivacyWelcomeWave({
+  buttonFrame,
+  hostFrame,
+  onTransitionComplete,
+}: PrivacyWelcomeTransition & {
+  onTransitionComplete: () => void;
+}): React.JSX.Element {
+  const { themeColors } = useTheme();
+  const localButtonX = buttonFrame.x - hostFrame.x;
+  const localButtonY = buttonFrame.y - hostFrame.y;
+  const localButtonBottom =
+    hostFrame.height - localButtonY - buttonFrame.height;
+  const pulseOffset = Math.min(spacing.xs, localButtonX);
+  const pulseLeft = localButtonX - pulseOffset;
+  const pulseWidth = buttonFrame.width + pulseOffset * 2;
+
+  const overlayBottom = useSharedValue(localButtonBottom);
+  const overlayBottomRadius = useSharedValue(radius.xl);
+  const overlayLeft = useSharedValue(localButtonX);
+  const overlayTop = useSharedValue(localButtonY);
+  const overlayTopRadius = useSharedValue(radius.xl);
+  const overlayWidth = useSharedValue(buttonFrame.width);
+  const completionProgress = useSharedValue(0);
+  const labelOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    const easeOut = ReanimatedEasing.out(ReanimatedEasing.cubic);
+
+    labelOpacity.value = withTiming(0, {
+      duration: PRIVACY_WELCOME_LABEL_FADE_DURATION,
+      easing: ReanimatedEasing.linear,
+    });
+
+    overlayLeft.value = withSequence(
+      withTiming(pulseLeft, {
+        duration: PRIVACY_WELCOME_PULSE_DURATION,
+        easing: easeOut,
+      }),
+      withTiming(0, {
+        duration: PRIVACY_WELCOME_MERGE_DURATION,
+        easing: easeOut,
+      }),
+    );
+    overlayWidth.value = withSequence(
+      withTiming(pulseWidth, {
+        duration: PRIVACY_WELCOME_PULSE_DURATION,
+        easing: easeOut,
+      }),
+      withTiming(hostFrame.width, {
+        duration: PRIVACY_WELCOME_MERGE_DURATION,
+        easing: easeOut,
+      }),
+    );
+    overlayBottom.value = withDelay(
+      PRIVACY_WELCOME_PULSE_DURATION,
+      withTiming(0, {
+        duration: PRIVACY_WELCOME_MERGE_DURATION,
+        easing: easeOut,
+      }),
+    );
+    overlayTop.value = withDelay(
+      PRIVACY_WELCOME_PULSE_DURATION + PRIVACY_WELCOME_MERGE_DURATION,
+      withTiming(0, {
+        duration: PRIVACY_WELCOME_RISE_DURATION,
+        easing: easeOut,
+      }),
+    );
+    overlayBottomRadius.value = withDelay(
+      PRIVACY_WELCOME_PULSE_DURATION,
+      withTiming(0, {
+        duration: PRIVACY_WELCOME_MERGE_DURATION,
+        easing: easeOut,
+      }),
+    );
+    overlayTopRadius.value = withDelay(
+      PRIVACY_WELCOME_PULSE_DURATION,
+      withSequence(
+        withTiming(radius.md, {
+          duration: PRIVACY_WELCOME_MERGE_DURATION,
+          easing: easeOut,
+        }),
+        withTiming(0, {
+          duration: PRIVACY_WELCOME_RISE_DURATION,
+          easing: easeOut,
+        }),
+      ),
+    );
+    completionProgress.value = withTiming(
+      1,
+      {
+        duration: PRIVACY_WELCOME_TRANSITION_DURATION,
+        easing: ReanimatedEasing.linear,
+      },
+      finished => {
+        if (finished) {
+          runOnJS(onTransitionComplete)();
+        }
+      },
+    );
+
+    return () => {
+      cancelAnimation(completionProgress);
+      cancelAnimation(overlayBottom);
+      cancelAnimation(overlayBottomRadius);
+      cancelAnimation(overlayLeft);
+      cancelAnimation(overlayTop);
+      cancelAnimation(overlayTopRadius);
+      cancelAnimation(overlayWidth);
+      cancelAnimation(labelOpacity);
+    };
+  }, [
+    completionProgress,
+    hostFrame.width,
+    labelOpacity,
+    onTransitionComplete,
+    overlayBottom,
+    overlayBottomRadius,
+    overlayLeft,
+    overlayTop,
+    overlayTopRadius,
+    overlayWidth,
+    pulseLeft,
+    pulseWidth,
+  ]);
+
+  const overlayAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      bottom: overlayBottom.value,
+      borderBottomLeftRadius: overlayBottomRadius.value,
+      borderBottomRightRadius: overlayBottomRadius.value,
+      borderTopLeftRadius: overlayTopRadius.value,
+      borderTopRightRadius: overlayTopRadius.value,
+      left: overlayLeft.value,
+      top: overlayTop.value,
+      width: overlayWidth.value,
+    };
+  });
+  const labelAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: labelOpacity.value,
+  }));
+  return (
+    <Reanimated.View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      pointerEvents="none"
+      style={[
+        styles.privacyWelcomeOverlay,
+        { backgroundColor: themeColors.fill.greenScreen },
+        overlayAnimatedStyle,
+      ]}
+      testID="privacy-welcome-wave"
+    >
+      <Reanimated.View
+        style={[
+          styles.morphButtonLabel,
+          {
+            height: buttonFrame.height,
+            width: buttonFrame.width,
+          },
+          labelAnimatedStyle,
+        ]}
+      >
+        <Button title="Accept" onPress={() => {}} style={styles.morphButton} />
+      </Reanimated.View>
+    </Reanimated.View>
+  );
+}
+
+function measureInWindow(
+  ref: React.RefObject<View | null>,
+): Promise<MeasuredFrame | null> {
+  return new Promise(resolve => {
+    const view = ref.current;
+    if (!view) {
+      resolve(null);
+      return;
+    }
+
+    view.measureInWindow((x, y, width, height) => {
+      if (width <= 0 || height <= 0) {
+        resolve(null);
+        return;
+      }
+
+      resolve({ height, width, x, y });
+    });
+  });
+}
+
+function ProductScreen({ onContinue }: { onContinue: () => void }) {
   const { themeColors, typography } = useTheme();
-  const [hoveredProduct, setHoveredProduct] = useState<
-    Product | 'none' | null
-  >(null);
+  const [hoveredProduct, setHoveredProduct] = useState<Product | 'none' | null>(
+    null,
+  );
 
   return (
     <View style={styles.questionPage}>
@@ -670,7 +1188,6 @@ function ProductScreen({
             </Pressable>
           ))}
         </View>
-
       </View>
     </View>
   );
@@ -698,10 +1215,7 @@ function ChoiceListScreen({
     <View style={styles.questionPage}>
       <View style={styles.questionHeaderSpacer} />
       <View style={styles.questionContent}>
-        <TitleBlock
-          title={title}
-          subtitle={subtitle}
-        />
+        <TitleBlock title={title} subtitle={subtitle} />
         <View style={styles.choiceList}>
           {choices.map(choice => (
             <ListItem
@@ -724,9 +1238,7 @@ function BirthYearScreen({ onContinue }: { onContinue: () => void }) {
   const [yearPickerWidth, setYearPickerWidth] = useState(normalize(390));
   const initialIndex = DEFAULT_BIRTH_YEAR - YEARS[0];
 
-  const updateYear = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const updateYear = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / TICK_WIDTH);
     setBirthYear(YEARS[Math.max(0, Math.min(YEARS.length - 1, index))]);
   };
@@ -762,10 +1274,7 @@ function BirthYearScreen({ onContinue }: { onContinue: () => void }) {
             </Text>
           </View>
 
-          <View
-            onLayout={measureYearPicker}
-            style={styles.yearPicker}
-          >
+          <View onLayout={measureYearPicker} style={styles.yearPicker}>
             <FlatList
               accessibilityLabel="Birth year carousel"
               contentContainerStyle={{
@@ -837,13 +1346,9 @@ function BirthYearScreen({ onContinue }: { onContinue: () => void }) {
             />
           </View>
         </View>
-
       </View>
       <BottomActionGroup>
-        <Button
-          title="Continue"
-          onPress={onContinue}
-        />
+        <Button title="Continue" onPress={onContinue} />
       </BottomActionGroup>
     </View>
   );
@@ -852,14 +1357,19 @@ function BirthYearScreen({ onContinue }: { onContinue: () => void }) {
 function QuestionFlowShell({
   children,
   onBack,
+  showStatusBar = true,
 }: {
   children: React.ReactNode;
   onBack: () => void;
+  showStatusBar?: boolean;
 }): React.JSX.Element {
   const { themeColors } = useTheme();
 
   return (
-    <ScreenShell backgroundColor={themeColors.fill.page}>
+    <ScreenShell
+      backgroundColor={themeColors.fill.page}
+      showStatusBar={showStatusBar}
+    >
       <View style={styles.questionFlowFrame}>
         <View style={styles.fixedQuestionHeader}>
           <FlowHeader onBack={onBack} onHelp={() => {}} />
@@ -903,8 +1413,54 @@ export function OnboardingFlow(): React.JSX.Element {
     fromIndex: number;
     toIndex: number;
   } | null>(null);
+  const [privacyWelcomeTransition, setPrivacyWelcomeTransition] =
+    useState<PrivacyWelcomeTransition | null>(null);
+  const [welcomeEntranceActive, setWelcomeEntranceActive] = useState(false);
   const transitionProgress = useRef(new Animated.Value(0)).current;
   const transitionLocked = useRef(false);
+  const transitionHostRef = useRef<View>(null);
+  const privacyAcceptButtonRef = useRef<View>(null);
+
+  const welcomeStepIndex = FLOW.indexOf('welcome');
+
+  const finishWelcomeEntrance = () => {
+    setWelcomeEntranceActive(false);
+    transitionLocked.current = false;
+  };
+
+  const finishPrivacyWelcomeTransition = () => {
+    setSettledStepIndex(welcomeStepIndex);
+    setPrivacyWelcomeTransition(null);
+    setWelcomeEntranceActive(true);
+  };
+
+  const startPrivacyWelcomeTransition = async () => {
+    if (transitionLocked.current) {
+      return;
+    }
+
+    transitionLocked.current = true;
+
+    const reduceMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
+    if (reduceMotionEnabled) {
+      setSettledStepIndex(welcomeStepIndex);
+      transitionLocked.current = false;
+      return;
+    }
+
+    const [buttonFrame, hostFrame] = await Promise.all([
+      measureInWindow(privacyAcceptButtonRef),
+      measureInWindow(transitionHostRef),
+    ]);
+
+    if (!buttonFrame || !hostFrame) {
+      setSettledStepIndex(welcomeStepIndex);
+      transitionLocked.current = false;
+      return;
+    }
+
+    setPrivacyWelcomeTransition({ buttonFrame, hostFrame });
+  };
 
   const navigate = (direction: 1 | -1) => {
     if (transitionLocked.current) {
@@ -923,13 +1479,17 @@ export function OnboardingFlow(): React.JSX.Element {
     const fromStep = FLOW[fromIndex];
     const toStep = FLOW[toIndex];
     const isQuestionTransition =
-      QUESTION_STEPS.has(FLOW[fromIndex]) &&
-      QUESTION_STEPS.has(FLOW[toIndex]);
+      QUESTION_STEPS.has(FLOW[fromIndex]) && QUESTION_STEPS.has(FLOW[toIndex]);
     const isAuthPrivacyTransition =
       (fromStep === 'auth' && toStep === 'privacy') ||
       (fromStep === 'privacy' && toStep === 'auth');
+    const isWelcomeProductTransition =
+      (fromStep === 'welcome' && toStep === 'product') ||
+      (fromStep === 'product' && toStep === 'welcome');
     const shouldAnimate =
-      isQuestionTransition || isAuthPrivacyTransition;
+      isQuestionTransition ||
+      isAuthPrivacyTransition ||
+      isWelcomeProductTransition;
 
     if (!shouldAnimate) {
       setSettledStepIndex(toIndex);
@@ -991,9 +1551,22 @@ export function OnboardingFlow(): React.JSX.Element {
       case 'auth':
         return <AuthScreen onContinue={next} />;
       case 'privacy':
-        return <PrivacyScreen onAccept={next} onBack={back} />;
+        return (
+          <PrivacyScreen
+            acceptButtonRef={privacyAcceptButtonRef}
+            acceptHidden={privacyWelcomeTransition !== null}
+            onAccept={startPrivacyWelcomeTransition}
+            onBack={back}
+          />
+        );
       case 'welcome':
-        return <OrbitingWelcome onStart={next} />;
+        return (
+          <OrbitingWelcome
+            animateEntrance={welcomeEntranceActive}
+            onEntranceComplete={finishWelcomeEntrance}
+            onStart={next}
+          />
+        );
       default:
         return null;
     }
@@ -1010,13 +1583,7 @@ export function OnboardingFlow(): React.JSX.Element {
       case 'auth':
         return <AuthScreen contentOnly onContinue={next} />;
       case 'privacy':
-        return (
-          <PrivacyScreen
-            contentOnly
-            onAccept={next}
-            onBack={back}
-          />
-        );
+        return <PrivacyScreen contentOnly onAccept={next} onBack={back} />;
       default:
         return renderIntro(stepIndex);
     }
@@ -1027,14 +1594,38 @@ export function OnboardingFlow(): React.JSX.Element {
     if (QUESTION_STEPS.has(settledStep)) {
       return (
         <QuestionFlowShell onBack={back}>
-          {renderQuestion(settledStepIndex)}
+          <Animated.View
+            key={`question-${settledStepIndex}`}
+            style={styles.transitionScreen}
+          >
+            {renderQuestion(settledStepIndex)}
+          </Animated.View>
         </QuestionFlowShell>
       );
     }
 
     return (
-      <View style={styles.flowViewport}>
-        {renderIntro(settledStepIndex)}
+      <View
+        collapsable={false}
+        pointerEvents={
+          privacyWelcomeTransition || welcomeEntranceActive ? 'none' : 'auto'
+        }
+        ref={transitionHostRef}
+        style={styles.flowViewport}
+        testID="onboarding-transition-host"
+      >
+        <Animated.View
+          key={`intro-${settledStepIndex}`}
+          style={styles.transitionScreen}
+        >
+          {renderIntro(settledStepIndex)}
+        </Animated.View>
+        {privacyWelcomeTransition ? (
+          <PrivacyWelcomeWave
+            {...privacyWelcomeTransition}
+            onTransitionComplete={finishPrivacyWelcomeTransition}
+          />
+        ) : null}
       </View>
     );
   }
@@ -1048,10 +1639,67 @@ export function OnboardingFlow(): React.JSX.Element {
     outputRange: [transition.direction * UIConstants.SCREEN_WIDTH, 0],
   });
 
+  const isQuestionTransition =
+    QUESTION_STEPS.has(FLOW[transition.fromIndex]) &&
+    QUESTION_STEPS.has(FLOW[transition.toIndex]);
+  const transitionFromStep = FLOW[transition.fromIndex];
+  const transitionToStep = FLOW[transition.toIndex];
+  const isWelcomeProductTransition =
+    (transitionFromStep === 'welcome' && transitionToStep === 'product') ||
+    (transitionFromStep === 'product' && transitionToStep === 'welcome');
+
+  if (isWelcomeProductTransition) {
+    const renderFullScreenStep = (
+      stepIndex: number,
+      showStatusBar: boolean,
+    ) => {
+      if (QUESTION_STEPS.has(FLOW[stepIndex])) {
+        return (
+          <QuestionFlowShell onBack={back} showStatusBar={showStatusBar}>
+            {renderQuestion(stepIndex)}
+          </QuestionFlowShell>
+        );
+      }
+
+      return <OrbitingWelcome onStart={next} showStatusBar={showStatusBar} />;
+    };
+
+    return (
+      <View style={styles.flowViewport}>
+        <Animated.View
+          key={`${
+            QUESTION_STEPS.has(transitionFromStep) ? 'question' : 'intro'
+          }-${transition.fromIndex}`}
+          pointerEvents="none"
+          style={[
+            styles.transitionScreen,
+            { transform: [{ translateX: outgoingTranslateX }] },
+          ]}
+        >
+          {renderFullScreenStep(transition.fromIndex, true)}
+        </Animated.View>
+        <Animated.View
+          key={`${
+            QUESTION_STEPS.has(transitionToStep) ? 'question' : 'intro'
+          }-${transition.toIndex}`}
+          pointerEvents="none"
+          style={[
+            styles.transitionScreen,
+            { transform: [{ translateX: incomingTranslateX }] },
+          ]}
+        >
+          {renderFullScreenStep(transition.toIndex, false)}
+        </Animated.View>
+      </View>
+    );
+  }
+
+  const transitionKeyPrefix = isQuestionTransition ? 'question' : 'intro';
+
   const transitionScreens = (
     <>
       <Animated.View
-        key={`outgoing-${transition.fromIndex}`}
+        key={`${transitionKeyPrefix}-${transition.fromIndex}`}
         pointerEvents="none"
         style={[
           styles.transitionScreen,
@@ -1061,7 +1709,7 @@ export function OnboardingFlow(): React.JSX.Element {
         {renderTransitionStep(transition.fromIndex)}
       </Animated.View>
       <Animated.View
-        key={`incoming-${transition.toIndex}`}
+        key={`${transitionKeyPrefix}-${transition.toIndex}`}
         pointerEvents="none"
         style={[
           styles.transitionScreen,
@@ -1073,12 +1721,7 @@ export function OnboardingFlow(): React.JSX.Element {
     </>
   );
 
-  const isQuestionTransition =
-    QUESTION_STEPS.has(FLOW[transition.fromIndex]) &&
-    QUESTION_STEPS.has(FLOW[transition.toIndex]);
-
   if (!isQuestionTransition) {
-    const transitionFromStep = FLOW[transition.fromIndex];
     const showHelp = transitionFromStep === 'privacy';
 
     return (
@@ -1092,9 +1735,7 @@ export function OnboardingFlow(): React.JSX.Element {
   }
 
   return (
-    <QuestionFlowShell onBack={back}>
-      {transitionScreens}
-    </QuestionFlowShell>
+    <QuestionFlowShell onBack={back}>{transitionScreens}</QuestionFlowShell>
   );
 }
 
@@ -1120,9 +1761,7 @@ const styles = StyleSheet.create({
   },
   safeArea: { flex: 1 },
   deviceFrame: {
-    alignSelf: 'center',
     flex: 1,
-    maxWidth: normalize(390),
     width: '100%',
   },
   header: {
@@ -1165,6 +1804,7 @@ const styles = StyleSheet.create({
   forgotPassword: { alignSelf: 'flex-end' },
   signupLink: { alignItems: 'center', paddingVertical: spacing.xs },
   privacyScreen: { flex: 1 },
+  hiddenAcceptButton: { opacity: 0 },
   privacyContent: {
     gap: gap.xl,
     paddingBottom: normalize(120),
@@ -1183,6 +1823,20 @@ const styles = StyleSheet.create({
     gap: gap.button,
     paddingHorizontal: spacing.md,
   },
+  privacyWelcomeOverlay: {
+    overflow: 'hidden',
+    position: 'absolute',
+    zIndex: 2,
+  },
+  morphButtonLabel: {
+    left: 0,
+    position: 'absolute',
+    top: 0,
+  },
+  morphButton: {
+    height: '100%',
+    width: '100%',
+  },
   welcomeContent: {
     flex: 1,
     justifyContent: 'space-between',
@@ -1190,13 +1844,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.s,
   },
   orbitArea: {
+    alignSelf: 'center',
     height: normalize(475),
+    maxWidth: normalize(390),
     position: 'relative',
     width: '100%',
   },
   ring: {
     borderRadius: radius.xl,
-    opacity: 0.05,
     position: 'absolute',
   },
   ringOuter: {
@@ -1224,6 +1879,7 @@ const styles = StyleSheet.create({
     top: normalize(211),
     width: normalize(121),
   },
+  fillImage: { height: '100%', width: '100%' },
   avatarOrbit: { ...StyleSheet.absoluteFillObject },
   avatar: { position: 'absolute' },
   avatar1: {
@@ -1278,7 +1934,11 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: normalize(52),
   },
-  productEmoji: { fontSize: normalize(30), lineHeight: normalize(46), width: normalize(52) },
+  productEmoji: {
+    fontSize: normalize(30),
+    lineHeight: normalize(46),
+    width: normalize(52),
+  },
   productHoverOverlay: { ...StyleSheet.absoluteFillObject },
   productTitle: { flex: 1 },
   productArrow: { height: iconSize.md, width: iconSize.md },
